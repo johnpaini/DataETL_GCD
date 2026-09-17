@@ -1,0 +1,1 @@
+select * from solicitacoes_complementares

@@ -1,0 +1,81 @@
+
+version: 2
+
+models:
+
+  - name: stg_solicitacoes
+    columns:
+      - name: id_solicitacao
+
+      - name: status
+        tests:
+          - not_null
+
+  - name: stg_historico_etapas
+    columns:
+      - name: id_solicitacao
+        tests:
+          - not_null
+
+      - name: etapa
+        tests:
+          - accepted_values:
+              values:
+                - 'RECEPCAO_TRIAGEM'
+                - 'ANALISE'
+                - 'NEGOCIACAO'
+                - 'VALIDACAO'
+                - 'FINALIZACAO'
+
+      - name: tipo_conflito
+        tests:
+          - not_null
+
+  - name: consumo_tempo_conciliacao
+    columns:
+      - name: id_solicitacao
+        tests:
+          - not_null
+          - unique
+
+      - name: protocolo
+        tests:
+          - not_null
+          - unique
+
+      - name: tipo_conflito
+        tests:
+          - not_null
+
+      - name: data_entrada
+        tests:
+          - not_null
+
+      - name: data_finalizacao
+        tests:
+          - not_null
+
+      - name: tempo_total_conciliacao_dias
+        tests:
+          - not_null
+
+  - name: consumo_tempo_etapas
+    columns:
+      - name: id_solicitacao
+        tests:
+          - not_null
+
+      - name: etapa
+        tests:
+          - accepted_values:
+              values:
+                - 'RECEPCAO_TRIAGEM'
+                - 'ANALISE'
+                - 'NEGOCIACAO'
+                - 'VALIDACAO'
+                - 'FINALIZACAO'
+
+      - name: tempo_espera_etapa_dias
+        tests:
+          - not_null
+

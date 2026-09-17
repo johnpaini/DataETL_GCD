@@ -1,0 +1,13 @@
+name: concilia_vagas_v5
+version: '1.0'
+config-version: 2
+profile: concilia_vagas_v5
+
+model-paths: ["models"]
+
+models:
+  concilia_vagas_v5:
+    staging:
+      +materialized: view
+    marts:
+      +materialized: table

@@ -1,0 +1,7 @@
+concilia_vagas_v5:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: ../data/pipeline.duckdb
+      threads: 1
