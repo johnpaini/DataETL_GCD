@@ -81,3 +81,33 @@ Runtime Error
 [0m23:48:21.410511 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000001BD12CFE510>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000001BD12CFFD90>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000001BD12CFF990>]}
 [0m23:48:21.411583 [debug] [MainThread]: Flushing usage events
 [0m23:48:21.986986 [debug] [MainThread]: An error was encountered while trying to flush usage events
+[0m10:22:45.425728 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x00000170A5412900>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x00000170A2FF0410>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x00000170A7EE3890>]}
+
+
+============================== 10:22:45.431120 | 1eff699c-87d5-4f8e-b9bc-3003b8eb1d78 ==============================
+[0m10:22:45.431120 [info ] [MainThread]: Running with dbt=1.12.5
+[0m10:22:45.431960 [debug] [MainThread]: running dbt with arguments {'static_parser': 'True', 'no_print': 'None', 'version_check': 'True', 'target_path': 'None', 'maximum_seed_size_mib': '1', 'warn_error_options': 'WarnErrorOptionsV2(error=[], warn=[], silence=[])', 'printer_width': '80', 'write_json': 'True', 'empty': 'None', 'log_cache_events': 'False', 'introspect': 'True', 'cache_selected_only': 'False', 'log_format': 'default', 'debug': 'False', 'fail_fast': 'False', 'partial_parse': 'True', 'send_anonymous_usage_stats': 'True', 'quiet': 'False', 'warn_error': 'None', 'profiles_dir': '.', 'indirect_selection': 'eager', 'hints_enabled': 'True', 'invocation_command': 'dbt docs generate --profiles-dir .', 'use_experimental_parser': 'False', 'use_colors': 'True', 'log_path': 'logs'}
+[0m10:22:45.432480 [error] [MainThread]: [[31mERROR[0m]: Encountered an error:
+Runtime Error
+  No dbt_project.yml found at expected path C:\Users\johnp\Documents\Projetos\GCDADOS\Concilia-Vagas-V5-BASE-ORIGINAL-ADAPTADA\dbt_project.yml
+  Verify that each entry within packages.yml (and their transitive dependencies) contains a file named dbt_project.yml
+  
+[0m10:22:45.433535 [debug] [MainThread]: Command `python -m dbt.cli.main docs generate` failed at 10:22:45.433440 after 0.19 seconds
+[0m10:22:45.433808 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x00000170A7E58FC0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x00000170A7E9DD90>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x00000170A7F0A7A0>]}
+[0m10:22:45.434074 [debug] [MainThread]: Flushing usage events
+[0m10:22:46.213542 [debug] [MainThread]: An error was encountered while trying to flush usage events
+[0m11:00:12.461875 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000001F6B9E42900>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000001F6B7A14410>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000001F6BC8AB890>]}
+
+
+============================== 11:00:12.467017 | 59bb01da-6a0a-486a-b9f5-3ca7dd54819f ==============================
+[0m11:00:12.467017 [info ] [MainThread]: Running with dbt=1.12.5
+[0m11:00:12.468165 [debug] [MainThread]: running dbt with arguments {'version_check': 'True', 'no_print': 'None', 'static_parser': 'True', 'warn_error_options': 'WarnErrorOptionsV2(error=[], warn=[], silence=[])', 'maximum_seed_size_mib': '1', 'target_path': 'None', 'printer_width': '80', 'write_json': 'True', 'empty': 'None', 'log_cache_events': 'False', 'introspect': 'True', 'cache_selected_only': 'False', 'fail_fast': 'False', 'debug': 'False', 'log_format': 'default', 'partial_parse': 'True', 'send_anonymous_usage_stats': 'True', 'quiet': 'False', 'warn_error': 'None', 'profiles_dir': '.', 'use_colors': 'True', 'hints_enabled': 'True', 'invocation_command': 'dbt docs serve --profiles-dir .', 'use_experimental_parser': 'False', 'indirect_selection': 'eager', 'log_path': 'logs'}
+[0m11:00:12.469202 [error] [MainThread]: [[31mERROR[0m]: Encountered an error:
+Runtime Error
+  No dbt_project.yml found at expected path C:\Users\johnp\Documents\Projetos\GCDADOS\Concilia-Vagas-V5-BASE-ORIGINAL-ADAPTADA\dbt_project.yml
+  Verify that each entry within packages.yml (and their transitive dependencies) contains a file named dbt_project.yml
+  
+[0m11:00:12.470922 [debug] [MainThread]: Command `python -m dbt.cli.main docs serve` failed at 11:00:12.470687 after 0.25 seconds
+[0m11:00:12.471362 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000001F6BC5C3360>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000001F6BC7420F0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000001F6BC8ECE20>]}
+[0m11:00:12.471863 [debug] [MainThread]: Flushing usage events
+[0m11:00:13.281774 [debug] [MainThread]: An error was encountered while trying to flush usage events
