@@ -3,6 +3,5 @@ concilia_vagas_v5:
   outputs:
     dev:
       type: duckdb
-     #path: ../data/pipeline.duckdb
-      path: data/concilia_vagas.duckdb
+      path: ../data/pipeline.duckdb
       threads: 1
