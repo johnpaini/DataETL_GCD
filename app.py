@@ -25,6 +25,7 @@ df_tempo = con.sql("SELECT * FROM consumo_tempo_conciliacao").df()
 df_etapas = con.sql("SELECT * FROM consumo_tempo_etapas").df()
 df_volume = con.sql("SELECT * FROM consumo_volume_solicitacoes").df()
 df_cobertura = con.sql("SELECT * FROM consumo_cobertura_historico").df()
+df_solicitacoes = con.sql("SELECT * FROM stg_solicitacoes").df()
 
 con.close()
 
@@ -35,7 +36,34 @@ if not df_tempo.empty:
 if not df_volume.empty:
     df_volume["periodo_entrada"] = df_volume["periodo_entrada"].astype(str)
 
+# NOMES AMIGÁVEIS SOMENTE NA APRESENTAÇÃO
+nomes_conflito = {
+    "LONGE_DA_RESIDENCIA": "Longe da residência",
+    "PROXIMA_DA_RESIDENCIA": "Próxima da residência",
+    "NA_ESCOLA_DO_IRMAO": "Na escola do irmão",
+    "NO_CAMINHO_DO_TRABALHO": "No caminho do trabalho",
+    "PROXIMA_DO_TRABALHO": "Próxima do trabalho",
+    "MESMA_REGIAO_DA_RESIDENCIA": "Mesma região da residência",
+    "ACESSO_POR_TRANSPORTE_PUBLICO": "Transporte público",
+    "OUTRO": "Outro",
+}
+
+nomes_etapa = {
+    "RECEPCAO_TRIAGEM": "Recepção / triagem",
+    "ANALISE": "Análise",
+    "NEGOCIACAO": "Negociação",
+    "VALIDACAO": "Validação",
+    "FINALIZACAO": "Finalização",
+}
+
 st.sidebar.header("🔎 Filtros")
+
+nomes_status = {
+    "EM_ANALISE": "Em análise",
+    "EM_ANÁLISE": "Em análise",
+    "FINALIZADA": "Finalizada",
+    "REGISTRADA": "Registrada",
+}
 
 if not df_tempo.empty:
     tipos = sorted(df_tempo["tipo_conflito"].dropna().unique().tolist())
@@ -43,13 +71,79 @@ if not df_tempo.empty:
         "Tipo de conflito",
         options=tipos,
         default=tipos,
+        format_func=lambda x: nomes_conflito.get(x, x),
     )
-    df_filtrado = df_tempo[
-        df_tempo["tipo_conflito"].isin(tipos_selecionados)
-    ].copy()
+
+    if not df_solicitacoes.empty:
+        status_opcoes = sorted(
+            df_solicitacoes["status"].dropna().unique().tolist()
+        )
+        status_selecionados = st.sidebar.multiselect(
+            "Status",
+            options=status_opcoes,
+            default=status_opcoes,
+            format_func=lambda x: nomes_status.get(x, x),
+        )
+    else:
+        status_selecionados = []
+
+    etapas_opcoes = sorted(df_etapas["etapa"].dropna().unique().tolist()) if not df_etapas.empty else []
+    etapas_selecionadas = st.sidebar.multiselect(
+        "Etapa do histórico",
+        options=etapas_opcoes,
+        default=etapas_opcoes,
+        format_func=lambda x: nomes_etapa.get(x, x),
+    )
+
+    data_min = df_tempo["data_entrada"].min().date()
+    data_max = df_tempo["data_entrada"].max().date()
+
+    st.sidebar.markdown("**Período de entrada**")
+    data_inicial = st.sidebar.date_input(
+        "Data inicial",
+        value=data_min,
+        min_value=data_min,
+        max_value=data_max,
+        format="DD/MM/YYYY",
+    )
+    data_final = st.sidebar.date_input(
+        "Data final",
+        value=data_max,
+        min_value=data_min,
+        max_value=data_max,
+        format="DD/MM/YYYY",
+    )
+
+    if st.sidebar.button("↺ Limpar filtros", use_container_width=True):
+        st.rerun()
+
+    if data_inicial > data_final:
+        st.sidebar.error("A data inicial deve ser anterior ou igual à data final.")
+        df_filtrado = df_tempo.iloc[0:0].copy()
+    else:
+        inicio = pd.Timestamp(data_inicial)
+        fim = pd.Timestamp(data_final) + pd.Timedelta(days=1)
+
+        ids_status = set(
+            df_solicitacoes.loc[
+                df_solicitacoes["status"].isin(status_selecionados),
+                "id_solicitacao",
+            ].dropna().astype(int)
+        ) if not df_solicitacoes.empty else set()
+
+        df_filtrado = df_tempo[
+            df_tempo["id_solicitacao"].isin(ids_status)
+            & df_tempo["tipo_conflito"].isin(tipos_selecionados)
+            & (df_tempo["data_entrada"] >= inicio)
+            & (df_tempo["data_entrada"] < fim)
+        ].copy()
 else:
     tipos_selecionados = []
+    status_selecionados = []
+    etapas_selecionadas = []
     df_filtrado = df_tempo.copy()
+    data_inicial = None
+    data_final = None
 
 total_finalizadas = 0
 total_analisadas = 0
@@ -91,8 +185,20 @@ col_volume, col_status = st.columns(2)
 with col_volume:
     st.subheader("📈 Volume por período")
     if not df_volume.empty:
+        volume_base = df_volume[df_volume["status"].isin(status_selecionados)].copy()
+        if data_inicial is not None and data_final is not None:
+            volume_base["periodo_data"] = pd.to_datetime(
+                volume_base["periodo_entrada"] + "-01", errors="coerce"
+            )
+            inicio_mes = pd.Timestamp(data_inicial).replace(day=1)
+            fim_mes = pd.Timestamp(data_final).replace(day=1)
+            volume_base = volume_base[
+                (volume_base["periodo_data"] >= inicio_mes)
+                & (volume_base["periodo_data"] <= fim_mes)
+            ].copy()
+
         volume_periodo = (
-            df_volume.groupby("periodo_entrada", as_index=False)
+            volume_base.groupby("periodo_entrada", as_index=False)
             ["quantidade_solicitacoes"].sum()
             .sort_values("periodo_entrada")
             .set_index("periodo_entrada")
@@ -110,8 +216,20 @@ with col_volume:
 with col_status:
     st.subheader("📊 Volume por período e status")
     if not df_volume.empty:
+        volume_status_base = df_volume[df_volume["status"].isin(status_selecionados)].copy()
+        if data_inicial is not None and data_final is not None:
+            volume_status_base["periodo_data"] = pd.to_datetime(
+                volume_status_base["periodo_entrada"] + "-01", errors="coerce"
+            )
+            inicio_mes = pd.Timestamp(data_inicial).replace(day=1)
+            fim_mes = pd.Timestamp(data_final).replace(day=1)
+            volume_status_base = volume_status_base[
+                (volume_status_base["periodo_data"] >= inicio_mes)
+                & (volume_status_base["periodo_data"] <= fim_mes)
+            ].copy()
+
         volume_status = (
-            df_volume.pivot_table(
+            volume_status_base.pivot_table(
                 index="periodo_entrada",
                 columns="status",
                 values="quantidade_solicitacoes",
@@ -132,26 +250,6 @@ with col_status:
         st.warning("Não há dados de status disponíveis.")
 
 st.divider()
-
-# NOMES AMIGÁVEIS SOMENTE NA APRESENTAÇÃO
-nomes_conflito = {
-    "LONGE_DA_RESIDENCIA": "Longe da residência",
-    "PROXIMA_DA_RESIDENCIA": "Próxima da residência",
-    "NA_ESCOLA_DO_IRMAO": "Na escola do irmão",
-    "NO_CAMINHO_DO_TRABALHO": "No caminho do trabalho",
-    "PROXIMA_DO_TRABALHO": "Próxima do trabalho",
-    "MESMA_REGIAO_DA_RESIDENCIA": "Mesma região da residência",
-    "ACESSO_POR_TRANSPORTE_PUBLICO": "Transporte público",
-    "OUTRO": "Outro",
-}
-
-nomes_etapa = {
-    "RECEPCAO_TRIAGEM": "Recepção / triagem",
-    "ANALISE": "Análise",
-    "NEGOCIACAO": "Negociação",
-    "VALIDACAO": "Validação",
-    "FINALIZACAO": "Finalização",
-}
 
 # TEMPO
 col_tipo, col_etapa = st.columns(2)
@@ -202,6 +300,7 @@ with col_etapa:
         ids_validos = df_filtrado["id_solicitacao"].unique()
         etapas_filtradas = df_etapas[
             df_etapas["id_solicitacao"].isin(ids_validos)
+            & df_etapas["etapa"].isin(etapas_selecionadas)
         ].copy()
 
         if not etapas_filtradas.empty:
@@ -306,7 +405,8 @@ st.divider()
 
 st.caption(
     "Nota metodológica: a camada de tempo utiliza somente solicitações "
-    "FINALIZADA com histórico temporal válido. Como o histórico não "
-    "possui uma etapa explícita de FINALIZACAO, a data de finalização "
-    "utilizada corresponde ao maior data_fim disponível."
+    "FINALIZADA com histórico temporal válido e com a etapa FINALIZACAO "
+    "registrada. A data de finalização corresponde ao data_fim da etapa "
+    "FINALIZACAO. O filtro de data usa a data de entrada; nos gráficos de "
+    "volume, a seleção é aplicada na granularidade mensal disponível na camada."
 )
