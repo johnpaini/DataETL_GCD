@@ -2560,5 +2560,355 @@
     "etapa": "FINALIZACAO",
     "dataInicio": "2025-07-14T12:00:00",
     "dataFim": "2025-07-17T12:00:00"
+  },
+  {
+    "idSolicitacao": 81,
+    "tipoConflito": "LONGE_DA_RESIDENCIA",
+    "etapa": "RECEPCAO_TRIAGEM",
+    "dataInicio": "2025-06-16T08:00:00",
+    "dataFim": "2025-06-18T08:00:00"
+  },
+  {
+    "idSolicitacao": 81,
+    "tipoConflito": "LONGE_DA_RESIDENCIA",
+    "etapa": "ANALISE",
+    "dataInicio": "2025-06-18T08:00:00",
+    "dataFim": "2025-06-23T08:00:00"
+  },
+  {
+    "idSolicitacao": 81,
+    "tipoConflito": "LONGE_DA_RESIDENCIA",
+    "etapa": "NEGOCIACAO",
+    "dataInicio": "2025-06-23T08:00:00",
+    "dataFim": "2025-06-30T08:00:00"
+  },
+  {
+    "idSolicitacao": 81,
+    "tipoConflito": "LONGE_DA_RESIDENCIA",
+    "etapa": "VALIDACAO",
+    "dataInicio": "2025-06-30T08:00:00",
+    "dataFim": "2025-07-04T08:00:00"
+  },
+  {
+    "idSolicitacao": 81,
+    "tipoConflito": "LONGE_DA_RESIDENCIA",
+    "etapa": "FINALIZACAO",
+    "dataInicio": "2025-07-04T08:00:00",
+    "dataFim": "2025-07-07T08:00:00"
+  },
+  {
+    "idSolicitacao": 82,
+    "tipoConflito": "PROXIMA_DA_RESIDENCIA",
+    "etapa": "RECEPCAO_TRIAGEM",
+    "dataInicio": "2025-06-19T08:00:00",
+    "dataFim": "2025-06-24T08:00:00"
+  },
+  {
+    "idSolicitacao": 82,
+    "tipoConflito": "PROXIMA_DA_RESIDENCIA",
+    "etapa": "ANALISE",
+    "dataInicio": "2025-06-24T08:00:00",
+    "dataFim": "2025-07-01T08:00:00"
+  },
+  {
+    "idSolicitacao": 82,
+    "tipoConflito": "PROXIMA_DA_RESIDENCIA",
+    "etapa": "NEGOCIACAO",
+    "dataInicio": "2025-07-01T08:00:00",
+    "dataFim": "2025-07-05T08:00:00"
+  },
+  {
+    "idSolicitacao": 82,
+    "tipoConflito": "PROXIMA_DA_RESIDENCIA",
+    "etapa": "VALIDACAO",
+    "dataInicio": "2025-07-05T08:00:00",
+    "dataFim": "2025-07-08T08:00:00"
+  },
+  {
+    "idSolicitacao": 82,
+    "tipoConflito": "PROXIMA_DA_RESIDENCIA",
+    "etapa": "FINALIZACAO",
+    "dataInicio": "2025-07-08T08:00:00",
+    "dataFim": "2025-07-10T08:00:00"
+  },
+  {
+    "idSolicitacao": 83,
+    "tipoConflito": "NA_ESCOLA_DO_IRMAO",
+    "etapa": "RECEPCAO_TRIAGEM",
+    "dataInicio": "2025-06-22T08:00:00",
+    "dataFim": "2025-06-29T08:00:00"
+  },
+  {
+    "idSolicitacao": 83,
+    "tipoConflito": "NA_ESCOLA_DO_IRMAO",
+    "etapa": "ANALISE",
+    "dataInicio": "2025-06-29T08:00:00",
+    "dataFim": "2025-07-03T08:00:00"
+  },
+  {
+    "idSolicitacao": 83,
+    "tipoConflito": "NA_ESCOLA_DO_IRMAO",
+    "etapa": "NEGOCIACAO",
+    "dataInicio": "2025-07-03T08:00:00",
+    "dataFim": "2025-07-06T08:00:00"
+  },
+  {
+    "idSolicitacao": 83,
+    "tipoConflito": "NA_ESCOLA_DO_IRMAO",
+    "etapa": "VALIDACAO",
+    "dataInicio": "2025-07-06T08:00:00",
+    "dataFim": "2025-07-08T08:00:00"
+  },
+  {
+    "idSolicitacao": 83,
+    "tipoConflito": "NA_ESCOLA_DO_IRMAO",
+    "etapa": "FINALIZACAO",
+    "dataInicio": "2025-07-08T08:00:00",
+    "dataFim": "2025-07-13T08:00:00"
+  },
+  {
+    "idSolicitacao": 84,
+    "tipoConflito": "NO_CAMINHO_DO_TRABALHO",
+    "etapa": "RECEPCAO_TRIAGEM",
+    "dataInicio": "2025-06-25T08:00:00",
+    "dataFim": "2025-06-29T08:00:00"
+  },
+  {
+    "idSolicitacao": 84,
+    "tipoConflito": "NO_CAMINHO_DO_TRABALHO",
+    "etapa": "ANALISE",
+    "dataInicio": "2025-06-29T08:00:00",
+    "dataFim": "2025-07-02T08:00:00"
+  },
+  {
+    "idSolicitacao": 84,
+    "tipoConflito": "NO_CAMINHO_DO_TRABALHO",
+    "etapa": "NEGOCIACAO",
+    "dataInicio": "2025-07-02T08:00:00",
+    "dataFim": "2025-07-04T08:00:00"
+  },
+  {
+    "idSolicitacao": 84,
+    "tipoConflito": "NO_CAMINHO_DO_TRABALHO",
+    "etapa": "VALIDACAO",
+    "dataInicio": "2025-07-04T08:00:00",
+    "dataFim": "2025-07-09T08:00:00"
+  },
+  {
+    "idSolicitacao": 84,
+    "tipoConflito": "NO_CAMINHO_DO_TRABALHO",
+    "etapa": "FINALIZACAO",
+    "dataInicio": "2025-07-09T08:00:00",
+    "dataFim": "2025-07-16T08:00:00"
+  },
+  {
+    "idSolicitacao": 85,
+    "tipoConflito": "PROXIMA_DO_TRABALHO",
+    "etapa": "RECEPCAO_TRIAGEM",
+    "dataInicio": "2025-06-23T08:00:00",
+    "dataFim": "2025-06-26T08:00:00"
+  },
+  {
+    "idSolicitacao": 85,
+    "tipoConflito": "PROXIMA_DO_TRABALHO",
+    "etapa": "ANALISE",
+    "dataInicio": "2025-06-26T08:00:00",
+    "dataFim": "2025-06-28T08:00:00"
+  },
+  {
+    "idSolicitacao": 85,
+    "tipoConflito": "PROXIMA_DO_TRABALHO",
+    "etapa": "NEGOCIACAO",
+    "dataInicio": "2025-06-28T08:00:00",
+    "dataFim": "2025-07-03T08:00:00"
+  },
+  {
+    "idSolicitacao": 85,
+    "tipoConflito": "PROXIMA_DO_TRABALHO",
+    "etapa": "VALIDACAO",
+    "dataInicio": "2025-07-03T08:00:00",
+    "dataFim": "2025-07-10T08:00:00"
+  },
+  {
+    "idSolicitacao": 85,
+    "tipoConflito": "PROXIMA_DO_TRABALHO",
+    "etapa": "FINALIZACAO",
+    "dataInicio": "2025-07-10T08:00:00",
+    "dataFim": "2025-07-14T08:00:00"
+  },
+  {
+    "idSolicitacao": 86,
+    "tipoConflito": "MESMA_REGIAO_DA_RESIDENCIA",
+    "etapa": "RECEPCAO_TRIAGEM",
+    "dataInicio": "2025-06-26T08:00:00",
+    "dataFim": "2025-06-28T08:00:00"
+  },
+  {
+    "idSolicitacao": 86,
+    "tipoConflito": "MESMA_REGIAO_DA_RESIDENCIA",
+    "etapa": "ANALISE",
+    "dataInicio": "2025-06-28T08:00:00",
+    "dataFim": "2025-07-03T08:00:00"
+  },
+  {
+    "idSolicitacao": 86,
+    "tipoConflito": "MESMA_REGIAO_DA_RESIDENCIA",
+    "etapa": "NEGOCIACAO",
+    "dataInicio": "2025-07-03T08:00:00",
+    "dataFim": "2025-07-10T08:00:00"
+  },
+  {
+    "idSolicitacao": 86,
+    "tipoConflito": "MESMA_REGIAO_DA_RESIDENCIA",
+    "etapa": "VALIDACAO",
+    "dataInicio": "2025-07-10T08:00:00",
+    "dataFim": "2025-07-14T08:00:00"
+  },
+  {
+    "idSolicitacao": 86,
+    "tipoConflito": "MESMA_REGIAO_DA_RESIDENCIA",
+    "etapa": "FINALIZACAO",
+    "dataInicio": "2025-07-14T08:00:00",
+    "dataFim": "2025-07-17T08:00:00"
+  },
+  {
+    "idSolicitacao": 87,
+    "tipoConflito": "ACESSO_POR_TRANSPORTE_PUBLICO",
+    "etapa": "RECEPCAO_TRIAGEM",
+    "dataInicio": "2025-06-29T08:00:00",
+    "dataFim": "2025-07-04T08:00:00"
+  },
+  {
+    "idSolicitacao": 87,
+    "tipoConflito": "ACESSO_POR_TRANSPORTE_PUBLICO",
+    "etapa": "ANALISE",
+    "dataInicio": "2025-07-04T08:00:00",
+    "dataFim": "2025-07-11T08:00:00"
+  },
+  {
+    "idSolicitacao": 87,
+    "tipoConflito": "ACESSO_POR_TRANSPORTE_PUBLICO",
+    "etapa": "NEGOCIACAO",
+    "dataInicio": "2025-07-11T08:00:00",
+    "dataFim": "2025-07-15T08:00:00"
+  },
+  {
+    "idSolicitacao": 87,
+    "tipoConflito": "ACESSO_POR_TRANSPORTE_PUBLICO",
+    "etapa": "VALIDACAO",
+    "dataInicio": "2025-07-15T08:00:00",
+    "dataFim": "2025-07-18T08:00:00"
+  },
+  {
+    "idSolicitacao": 87,
+    "tipoConflito": "ACESSO_POR_TRANSPORTE_PUBLICO",
+    "etapa": "FINALIZACAO",
+    "dataInicio": "2025-07-18T08:00:00",
+    "dataFim": "2025-07-20T08:00:00"
+  },
+  {
+    "idSolicitacao": 88,
+    "tipoConflito": "OUTRO",
+    "etapa": "RECEPCAO_TRIAGEM",
+    "dataInicio": "2025-07-02T08:00:00",
+    "dataFim": "2025-07-09T08:00:00"
+  },
+  {
+    "idSolicitacao": 88,
+    "tipoConflito": "OUTRO",
+    "etapa": "ANALISE",
+    "dataInicio": "2025-07-09T08:00:00",
+    "dataFim": "2025-07-13T08:00:00"
+  },
+  {
+    "idSolicitacao": 88,
+    "tipoConflito": "OUTRO",
+    "etapa": "NEGOCIACAO",
+    "dataInicio": "2025-07-13T08:00:00",
+    "dataFim": "2025-07-16T08:00:00"
+  },
+  {
+    "idSolicitacao": 88,
+    "tipoConflito": "OUTRO",
+    "etapa": "VALIDACAO",
+    "dataInicio": "2025-07-16T08:00:00",
+    "dataFim": "2025-07-18T08:00:00"
+  },
+  {
+    "idSolicitacao": 88,
+    "tipoConflito": "OUTRO",
+    "etapa": "FINALIZACAO",
+    "dataInicio": "2025-07-18T08:00:00",
+    "dataFim": "2025-07-23T08:00:00"
+  },
+  {
+    "idSolicitacao": 89,
+    "tipoConflito": "LONGE_DA_RESIDENCIA",
+    "etapa": "RECEPCAO_TRIAGEM",
+    "dataInicio": "2025-07-05T08:00:00",
+    "dataFim": "2025-07-09T08:00:00"
+  },
+  {
+    "idSolicitacao": 89,
+    "tipoConflito": "LONGE_DA_RESIDENCIA",
+    "etapa": "ANALISE",
+    "dataInicio": "2025-07-09T08:00:00",
+    "dataFim": "2025-07-12T08:00:00"
+  },
+  {
+    "idSolicitacao": 89,
+    "tipoConflito": "LONGE_DA_RESIDENCIA",
+    "etapa": "NEGOCIACAO",
+    "dataInicio": "2025-07-12T08:00:00",
+    "dataFim": "2025-07-14T08:00:00"
+  },
+  {
+    "idSolicitacao": 89,
+    "tipoConflito": "LONGE_DA_RESIDENCIA",
+    "etapa": "VALIDACAO",
+    "dataInicio": "2025-07-14T08:00:00",
+    "dataFim": "2025-07-19T08:00:00"
+  },
+  {
+    "idSolicitacao": 89,
+    "tipoConflito": "LONGE_DA_RESIDENCIA",
+    "etapa": "FINALIZACAO",
+    "dataInicio": "2025-07-19T08:00:00",
+    "dataFim": "2025-07-26T08:00:00"
+  },
+  {
+    "idSolicitacao": 90,
+    "tipoConflito": "PROXIMA_DA_RESIDENCIA",
+    "etapa": "RECEPCAO_TRIAGEM",
+    "dataInicio": "2025-07-03T08:00:00",
+    "dataFim": "2025-07-06T08:00:00"
+  },
+  {
+    "idSolicitacao": 90,
+    "tipoConflito": "PROXIMA_DA_RESIDENCIA",
+    "etapa": "ANALISE",
+    "dataInicio": "2025-07-06T08:00:00",
+    "dataFim": "2025-07-08T08:00:00"
+  },
+  {
+    "idSolicitacao": 90,
+    "tipoConflito": "PROXIMA_DA_RESIDENCIA",
+    "etapa": "NEGOCIACAO",
+    "dataInicio": "2025-07-08T08:00:00",
+    "dataFim": "2025-07-13T08:00:00"
+  },
+  {
+    "idSolicitacao": 90,
+    "tipoConflito": "PROXIMA_DA_RESIDENCIA",
+    "etapa": "VALIDACAO",
+    "dataInicio": "2025-07-13T08:00:00",
+    "dataFim": "2025-07-20T08:00:00"
+  },
+  {
+    "idSolicitacao": 90,
+    "tipoConflito": "PROXIMA_DA_RESIDENCIA",
+    "etapa": "FINALIZACAO",
+    "dataInicio": "2025-07-20T08:00:00",
+    "dataFim": "2025-07-24T08:00:00"
   }
 ]
