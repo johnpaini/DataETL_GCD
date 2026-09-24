@@ -1,4 +1,4 @@
-# Tutorial V5
+# Tutorial — Concilia Vagas
 
 ## 1. Instalar
 
@@ -13,7 +13,6 @@ Explique que o script captura CSV/JSON sem regras de negócio.
 ## 3. dbt
 
 ```bash
-cd dbt
 python -m dbt.cli.main debug --profiles-dir .
 python -m dbt.cli.main build --profiles-dir .
 python -m dbt.cli.main docs generate --profiles-dir .

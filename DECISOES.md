@@ -19,9 +19,13 @@ A pergunta principal do projeto é:
 A resposta é construída a partir de métricas derivadas pelo pipeline:
 
 - tempo total de conciliação;
+
 - tempo de permanência em cada etapa;
+
 - quantidade de solicitações;
+
 - recortes por tipo de conflito;
+
 - recortes por período de entrada.
 
 As métricas de tempo não existem prontas nas fontes: são calculadas a partir das datas disponíveis.
@@ -33,17 +37,29 @@ As métricas de tempo não existem prontas nas fontes: são calculadas a partir 
 A arquitetura segue o fluxo:
 
 ```text
+
 FONTES
-  ↓
+
+  ↓
+
 INGESTÃO
-  ↓
+
+  ↓
+
 RAW
-  ↓
+
+  ↓
+
 STAGING
-  ↓
+
+  ↓
+
 CONSUMO
-  ↓
+
+  ↓
+
 RESPOSTA / DASHBOARD
+
 ```
 
 ### RAW
@@ -63,9 +79,13 @@ Isso permite manter rastreabilidade entre o dado recebido e o dado utilizado nas
 A camada STAGING realiza a preparação técnica dos dados, incluindo:
 
 - conversão de tipos;
+
 - tratamento de datas;
+
 - padronização textual;
+
 - normalização de valores;
+
 - aplicação das regras necessárias para tornar os dados utilizáveis pelos modelos seguintes.
 
 STAGING não deve ser confundida com a camada de resposta de negócio.
@@ -85,7 +105,9 @@ O projeto utiliza fontes em formatos diferentes:
 ### Solicitações
 
 ```text
+
 data/raw/solicitacoes.csv
+
 ```
 
 Representa a fonte original de solicitações.
@@ -93,7 +115,9 @@ Representa a fonte original de solicitações.
 ### Solicitações complementares
 
 ```text
+
 data/raw/solicitacoes_complementares.csv
+
 ```
 
 É uma fonte sintética complementar, utilizada para ampliar a massa disponível para a demonstração acadêmica.
@@ -101,7 +125,9 @@ data/raw/solicitacoes_complementares.csv
 ### Histórico das etapas
 
 ```text
+
 data/raw/historico_etapas.json
+
 ```
 
 Representa o histórico temporal das etapas das solicitações.
@@ -119,11 +145,17 @@ A fonte complementar somente adiciona uma solicitação quando seu `id_solicitac
 A regra é:
 
 ```text
+
 ORIGINAL
-   │
-   ├── id já existente ──→ mantém ORIGINAL
-   │
-   └── id inexistente ───→ aceita COMPLEMENTAR
+
+   │
+
+   ├── id já existente ──→ mantém ORIGINAL
+
+   │
+
+   └── id inexistente ───→ aceita COMPLEMENTAR
+
 ```
 
 Essa decisão evita duplicação de solicitações e preserva a fonte principal.
@@ -177,23 +209,37 @@ Uma solicitação pode existir no sistema e estar com status `FINALIZADA`, mas i
 Para entrar em `consumo_tempo_conciliacao`, a solicitação precisa:
 
 1. estar com status `FINALIZADA`;
+
 2. possuir `id_solicitacao` válido;
+
 3. possuir protocolo;
+
 4. possuir `data_entrada`;
+
 5. possuir histórico temporal válido;
+
 6. possuir as cinco etapas esperadas;
+
 7. possuir a etapa `FINALIZACAO`;
+
 8. possuir datas de início e fim válidas nas etapas utilizadas;
+
 9. não possuir `data_fim` anterior à `data_inicio`.
 
 As cinco etapas esperadas são:
 
 ```text
+
 RECEPCAO_TRIAGEM
+
 ANALISE
+
 NEGOCIACAO
+
 VALIDACAO
+
 FINALIZACAO
+
 ```
 
 Essa regra evita calcular uma duração total com histórico incompleto.
@@ -205,7 +251,9 @@ Essa regra evita calcular uma duração total com histórico incompleto.
 A data de finalização utilizada na métrica principal é:
 
 ```text
+
 data_fim da etapa FINALIZACAO
+
 ```
 
 Essa definição é mais explícita do que simplesmente utilizar a maior data encontrada no histórico.
@@ -213,9 +261,13 @@ Essa definição é mais explícita do que simplesmente utilizar a maior data en
 A métrica de tempo total é:
 
 ```text
+
 tempo_total_conciliacao_dias
+
 =
+
 data_finalizacao - data_entrada
+
 ```
 
 ---
@@ -225,7 +277,9 @@ data_finalizacao - data_entrada
 Para `consumo_tempo_etapas`, o tempo de permanência é calculado como:
 
 ```text
+
 data_fim - data_inicio
+
 ```
 
 em dias.
@@ -235,7 +289,9 @@ Somente registros com datas válidas são utilizados para esse cálculo.
 Também é excluído o caso em que:
 
 ```text
+
 data_fim < data_inicio
+
 ```
 
 pois isso representaria uma inconsistência temporal para a métrica.
@@ -249,9 +305,13 @@ Os textos recebidos das fontes são padronizados na camada de staging.
 Um caso específico documentado é:
 
 ```text
+
 DISTANTE_DA_RESIDENCIA
-        ↓
+
+        ↓
+
 LONGE_DA_RESIDENCIA
+
 ```
 
 A padronização é feita na transformação, mantendo o valor original preservado na camada RAW.
@@ -289,9 +349,13 @@ Assim, um registro incompleto pode permanecer disponível nas camadas anteriores
 Exemplos:
 
 - solicitação finalizada sem histórico completo;
+
 - etapa sem `data_inicio`;
+
 - etapa sem `data_fim`;
+
 - intervalo temporal inválido;
+
 - solicitação sem campos necessários para uma determinada análise.
 
 Esses casos não devem produzir artificialmente uma duração de conciliação.
@@ -307,10 +371,15 @@ Sempre que o problema puder ser corrigido de maneira determinística e documenta
 Exemplos de tratamento adotados no projeto:
 
 - **Inconsistências de formatação textual:** padronização de espaços, caixa dos caracteres e representação das categorias.
+
 - **Categorias semanticamente equivalentes:** aplicação de regras explícitas de normalização quando duas representações correspondem ao mesmo conceito. Um exemplo é a normalização de `DISTANTE_DA_RESIDENCIA` para `LONGE_DA_RESIDENCIA`.
+
 - **Conversão de tipos:** conversão de datas e identificadores para os tipos esperados quando a conversão pode ser realizada de forma segura.
+
 - **Registros parcialmente utilizáveis:** os campos válidos podem continuar sendo utilizados em análises que não dependam do campo inconsistente.
+
 - **Histórico incompleto:** a solicitação continua preservada, mas não participa de métricas que exigem histórico temporal completo. Não são criadas etapas ou datas que não estejam presentes na fonte.
+
 - **Inconsistências que não podem ser corrigidas com segurança:** o valor não é artificialmente alterado. O registro permanece preservado nas camadas anteriores e pode ser excluído apenas da análise específica que dependeria daquele dado.
 
 A estratégia adotada, portanto, é **aproveitar o máximo possível dos dados sem criar informações que não estejam presentes na fonte**.
@@ -324,14 +393,19 @@ A qualidade é verificada também por testes do dbt.
 São utilizados diferentes tipos de testes, incluindo:
 
 - `not_null`;
+
 - `unique`;
+
 - `accepted_values`.
 
 Os testes ajudam a detectar problemas como:
 
 - identificadores ausentes;
+
 - duplicidades;
+
 - valores fora do domínio esperado;
+
 - campos obrigatórios ausentes.
 
 Os testes são um mecanismo de detecção de qualidade; eles não substituem a preservação do RAW nem as regras explícitas de transformação.
@@ -345,11 +419,17 @@ As regras de negócio utilizadas para construir as métricas ficam nos modelos d
 A consulta final deve ser simples e orientada à pergunta:
 
 ```text
+
 CONSUMO
-  ↓
+
+  ↓
+
 agregação
-  ↓
+
+  ↓
+
 resposta
+
 ```
 
 A consulta final não deve reimplementar regras de qualidade que já foram definidas nos modelos anteriores.
@@ -367,9 +447,13 @@ A configuração atual foi construída para possuir solicitações finalizadas t
 Isso é intencional: permite demonstrar que:
 
 ```text
+
 total de FINALIZADAS
-        ≠
+
+        ≠
+
 total analisado no tempo
+
 ```
 
 O indicador `cobertura_historico_percentual` explicita essa diferença.
@@ -385,10 +469,15 @@ O dashboard Streamlit utiliza as camadas preparadas pelo pipeline.
 As consultas principais são realizadas sobre:
 
 ```text
+
 consumo_tempo_conciliacao
+
 consumo_tempo_etapas
+
 consumo_volume_solicitacoes
+
 consumo_cobertura_historico
+
 ```
 
 O dashboard também utiliza `stg_solicitacoes` para filtros e informações de solicitação.
@@ -406,8 +495,11 @@ A decisão é utilizar a biblioteca Python `deltalake`, sem Spark.
 A demonstração deve evidenciar:
 
 1. uma versão atual;
+
 2. uma versão anterior;
+
 3. uma consulta equivalente nas duas versões;
+
 4. a diferença entre os resultados.
 
 O objetivo é demonstrar que uma alteração nos dados não elimina a possibilidade de consultar uma versão anterior da tabela.
@@ -419,15 +511,25 @@ O objetivo é demonstrar que uma alteração nos dados não elimina a possibilid
 A linhagem esperada é:
 
 ```text
+
 FONTES
-  ↓
+
+  ↓
+
 RAW
-  ↓
+
+  ↓
+
 STAGING
-  ↓
+
+  ↓
+
 CONSUMO
-  ↓
+
+  ↓
+
 RESPOSTA
+
 ```
 
 O dbt é utilizado para documentar as dependências entre modelos.
@@ -441,14 +543,23 @@ A camada RAW permanece como referência do dado de origem, enquanto STAGING e CO
 As decisões do projeto podem ser resumidas nos seguintes princípios:
 
 1. **Preservar o dado bruto.**
+
 2. **Não corrigir o RAW.**
+
 3. **Documentar transformações no dbt.**
+
 4. **Declarar o grão dos modelos.**
+
 5. **Não calcular métricas com histórico temporal insuficiente.**
+
 6. **Manter registros incompletos disponíveis para rastreabilidade.**
+
 7. **Separar regras de transformação da consulta final.**
+
 8. **Evitar que o dashboard consulte diretamente o RAW.**
+
 9. **Validar qualidade com testes automatizados.**
+
 10. **Manter os dados sintéticos claramente identificados como material acadêmico.**
 
 ---
@@ -456,20 +567,34 @@ As decisões do projeto podem ser resumidas nos seguintes princípios:
 ## 21. Resumo das decisões
 
 | Tema | Decisão |
+
 |---|---|
+
 | Dado bruto | Preservado sem correção |
+
 | Fonte original x complementar | Original tem precedência |
+
 | Grão de solicitação | Uma linha por solicitação |
+
 | Grão de histórico | Uma linha por ocorrência de etapa |
+
 | Tempo total | `data_finalizacao - data_entrada` |
+
 | Data de finalização | `data_fim` da etapa `FINALIZACAO` |
+
 | Etapas esperadas | 5 etapas do fluxo definido |
+
 | Histórico incompleto | Não participa da métrica de tempo total |
+
 | Dado inválido | Não é apagado do RAW |
-| Quarentena física | Não adotada como camada do projeto |
+
+
 | Tratamento de qualidade | Normalização determinística + testes + filtros controlados nas métricas |
+
 | Dashboard | Consulta staging/consumo, não RAW |
+
 | Dados complementares | Sintéticos, para fins acadêmicos |
+
 | Versionamento | Delta Lake com Time Travel |
 
 ---

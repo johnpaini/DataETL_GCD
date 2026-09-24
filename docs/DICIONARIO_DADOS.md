@@ -10,7 +10,7 @@
 | etapa | JSON | Etapa do processo |
 | data_inicio | JSON | Início da etapa |
 | data_fim | JSON | Fim da etapa |
-| data_finalizacao | derivado | Maior data_fim válida |
+| data_finalizacao | derivado | data_fim da etapa FINALIZACAO |
 | periodo_entrada | derivado | Mês da entrada |
 | tempo_total_conciliacao_dias | derivado | Finalização menos entrada |
 | tempo_espera_etapa_dias | derivado | Fim menos início da etapa |

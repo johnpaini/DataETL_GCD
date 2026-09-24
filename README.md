@@ -1,223 +1,606 @@
 # Concilia Vagas — Pipeline de Dados
 
-Pipeline acadêmico de **Gestão e Governança de Dados** desenvolvido para demonstrar a jornada completa dos dados:
+Projeto acadêmico de engenharia e governança de dados desenvolvido para transformar dados heterogêneos de solicitações de conciliação em informações analíticas confiáveis, rastreáveis e reproduzíveis.
 
-**FONTES → INGESTÃO → PRESERVAÇÃO DO BRUTO → TRANSFORMAÇÃO → CONSUMO → RESPOSTA**
-
-O projeto utiliza dados fictícios/sintéticos para demonstrar uma solução reproduzível de análise do tempo de conciliação de solicitações de vagas.
+O projeto utiliza ingestão em Python, preservação do dado bruto, transformação com dbt e DuckDB, camada de consumo orientada à pergunta de negócio, testes de qualidade, documentação de linhagem e versionamento com Delta Lake.
 
 ---
 
 ## 1. Pergunta de negócio
 
-> **Quanto tempo, em média, uma solicitação de conciliação de vagas leva desde a data de entrada até a sua finalização, considerando o tipo de conflito e o período de entrada, e em qual etapa do processo está concentrado o maior tempo de espera?**
+A pergunta principal do projeto é:
 
-A pergunta é respondida por meio de:
+> **Quanto tempo, em média, uma solicitação leva desde a entrada até a finalização da conciliação, considerando o tipo de conflito e o período de entrada?**
 
-- **tempo total de conciliação**;
-- análise por **tipo de conflito**;
-- análise por **período de entrada**;
-- análise do **tempo médio de permanência em cada etapa**.
+A análise também permite identificar:
 
-### Métricas derivadas
-
-**Tempo total de conciliação**
-
-```text
-data_finalizacao - data_entrada
-```
-
-**Tempo de permanência na etapa**
-
-```text
-data_fim - data_inicio
-```
-
-Essas métricas são calculadas pelo pipeline e **não existem prontas nas fontes**.
+- o volume de solicitações por período e status;
+- a cobertura do histórico de etapas;
+- o tempo médio de permanência em cada etapa;
+- a etapa com maior tempo médio de permanência;
+- o comportamento do tempo de conciliação por tipo de conflito e período.
 
 ---
 
-## 2. Fontes de dados
+## 2. Jornada dos dados
 
-O projeto utiliza fontes em formatos diferentes.
+O fluxo do projeto é organizado da seguinte forma:
 
-### Fonte 1 — Solicitações
+```text
+FONTES
+  ↓
+INGESTÃO
+  ↓
+PRESERVAÇÃO RAW
+  ↓
+STAGING
+  ↓
+CONSUMO
+  ↓
+RESPOSTA / DASHBOARD
+```
+
+Cada camada possui uma responsabilidade específica:
+
+### Fontes
+
+Contêm os arquivos originais utilizados pelo projeto.
+
+### Ingestão
+
+Realizada em Python, com responsabilidade de ler e estruturar os arquivos de origem.
+
+A ingestão não aplica regras de negócio.
+
+### Preservação RAW
+
+Mantém os dados recebidos das fontes sem alterações de conteúdo.
+
+O objetivo é garantir rastreabilidade e permitir a comparação entre o dado original e as transformações realizadas posteriormente.
+
+### Staging
+
+Realiza a preparação dos dados para análise.
+
+Nesta camada são aplicadas transformações determinísticas e documentadas, como:
+
+- padronização de textos;
+- normalização de categorias equivalentes;
+- conversão de tipos;
+- tratamento de datas;
+- preparação dos campos utilizados pelas camadas analíticas.
+
+O dado original permanece preservado no RAW.
+
+Quando uma inconsistência pode ser corrigida de maneira segura e determinística, busca-se normalizar o registro para aproveitá-lo na análise.
+
+Quando não é possível corrigir uma informação com segurança, o valor não é inventado ou alterado artificialmente. O registro continua preservado nas camadas anteriores e pode participar das análises que não dependam da informação inconsistente.
+
+### Consumo
+
+Contém tabelas orientadas às perguntas analíticas do projeto.
+
+As regras necessárias para construção dos indicadores são aplicadas antes da resposta final, evitando que a consulta de negócio precise acessar diretamente as fontes ou reproduzir regras de transformação.
+
+### Resposta / Dashboard
+
+A resposta final é obtida exclusivamente a partir da camada de consumo.
+
+O projeto também possui um dashboard desenvolvido em Streamlit para exploração dos principais indicadores.
+
+O dashboard não consulta diretamente os dados RAW.
+
+---
+
+## 3. Fontes de dados
+
+O projeto utiliza diferentes formatos de entrada:
+
+### Solicitações
 
 ```text
 data/raw/solicitacoes.csv
 ```
 
-Fonte original preservada sem alteração.
+Contém os registros principais das solicitações.
 
-### Fonte 2 — Solicitações complementares
+### Solicitações complementares
 
 ```text
 data/raw/solicitacoes_complementares.csv
 ```
 
-Dados sintéticos utilizados para complementar informações necessárias à análise, principalmente:
+Fonte complementar utilizada para enriquecer a massa sintética do projeto acadêmico, incluindo registros e períodos necessários para demonstrar a análise.
 
-- datas de finalização;
-- diferentes períodos de entrada;
-- informações necessárias aos recortes da análise.
-
-### Fonte 3 — Histórico das etapas
+### Histórico de etapas
 
 ```text
 data/raw/historico_etapas.json
 ```
 
-Contém o histórico das etapas de cada solicitação, permitindo calcular o tempo de permanência em cada etapa.
+Contém o histórico temporal das etapas pelas quais as solicitações passaram.
 
-> **Importante:** os dados complementares são sintéticos e foram utilizados exclusivamente para fins acadêmicos. Não são apresentados como dados reais.
+O uso de mais de um formato de entrada demonstra o tratamento de fontes heterogêneas durante a ingestão.
+
+> **Observação:** os dados utilizados no projeto são sintéticos/anônimos e destinados exclusivamente ao contexto acadêmico.
 
 ---
 
-## 3. Arquitetura do projeto
+## 4. Arquitetura
 
-A solução utiliza uma arquitetura simplificada em camadas:
-
-```text
-                 FONTES
-                   │
-                   ▼
-                INGESTÃO
-                   │
-                   ▼
-             PRESERVAÇÃO RAW
-                   │
-                   ▼
-                STAGING
-              ┌────┴────┐
-              ▼         ▼
-         QUARENTENA   CONSUMO
-                         │
-                         ▼
-                      RESPOSTA
-```
-
-### RAW
-
-Preserva os dados conforme recebidos, incluindo eventuais defeitos.
-
-### STAGING
-
-Realiza:
-
-- padronização;
-- tipagem;
-- tratamento de datas;
-- normalização;
-- tratamentos necessários para qualidade dos dados.
-
-### QUARENTENA
-
-Recebe registros que não podem participar da análise de forma confiável.
-
-### CONSUMO
-
-Contém os modelos preparados especificamente para responder à pergunta de negócio.
-
-Principais modelos:
+A arquitetura simplificada do projeto é:
 
 ```text
-consumo_tempo_conciliacao
-consumo_tempo_etapas
+                  ┌─────────────────────┐
+                  │       FONTES        │
+                  │ CSV / JSON          │
+                  └──────────┬──────────┘
+                             │
+                             ▼
+                  ┌─────────────────────┐
+                  │      INGESTÃO       │
+                  │      Python         │
+                  └──────────┬──────────┘
+                             │
+                             ▼
+                  ┌─────────────────────┐
+                  │   PRESERVAÇÃO RAW   │
+                  │ Dado original       │
+                  └──────────┬──────────┘
+                             │
+                             ▼
+                  ┌─────────────────────┐
+                  │      STAGING        │
+                  │ dbt + DuckDB        │
+                  │                     │
+                  │ Normalização        │
+                  │ Tipagem             │
+                  │ Tratamento de datas │
+                  └──────────┬──────────┘
+                             │
+                             ▼
+                  ┌─────────────────────┐
+                  │      CONSUMO        │
+                  │ Métricas e respostas│
+                  └──────────┬──────────┘
+                             │
+                             ▼
+              ┌──────────────────────────────┐
+              │     RESPOSTA / DASHBOARD    │
+              │ SQL + Streamlit             │
+              └──────────────────────────────┘
 ```
 
 ---
 
-## 4. Tecnologias utilizadas
+## 5. Tecnologias utilizadas
 
-- **Python 3.11+**
-- **dbt Core**
-- **DuckDB**
-- **Delta Lake / deltalake**
-- **SQL**
-- **Git**
+- Python 3.11+
+- dbt Core
+- DuckDB
+- SQL
+- Delta Lake
+- biblioteca `deltalake`
+- Streamlit
+- Git
 
-Não é necessário utilizar Spark.
+O projeto utiliza Delta Lake por meio da biblioteca `deltalake` e **não utiliza Apache Spark**.
 
 ---
 
-## 5. Estrutura do projeto
+## 6. Estrutura do projeto
 
-A estrutura principal é:
+A estrutura principal é organizada da seguinte forma:
 
 ```text
 concilia-vagas/
 │
 ├── data/
-│   └── raw/
-│       ├── solicitacoes.csv
-│       ├── solicitacoes_complementares.csv
-│       └── historico_etapas.json
+│   ├── raw/
+│   │   ├── solicitacoes.csv
+│   │   ├── solicitacoes_complementares.csv
+│   │   └── historico_etapas.json
+│   │
+│   └── delta/
+│
+├── dbt/
+│   ├── models/
+│   │   ├── staging/
+│   │   └── consumo/
+│   │
+│   ├── schema.yml
+│   └── dbt_project.yml
 │
 ├── src/
 │   └── pipeline.py
 │
-├── dbt/
-│   ├── dbt_project.yml
-│   ├── profiles.yml
-│   └── models/
-│       ├── staging/
-│       ├── consumo/
-│       ├── schema.yml
-│       └── ...
-│
 ├── consultas/
-│   ├── resposta.sql
 │   ├── executar_respostas.py
 │   └── delta_time_travel.py
 │
-├── requirements.txt
-├── README.md
-└── DECISOES.md
+├── docs/
+│
+├── app.py
+├── DECISOES.md
+└── README.md
 ```
 
 ---
 
-## 6. Instalação
+## 7. Modelagem e regras principais
 
-Abra o terminal na **raiz do projeto**.
+### 7.1 Histórico de etapas
 
-### Criar ambiente virtual
+O histórico representa as etapas pelas quais uma solicitação passou.
+
+As etapas esperadas para uma solicitação completa são:
+
+```text
+RECEPCAO_TRIAGEM
+        ↓
+ANALISE
+        ↓
+NEGOCIACAO
+        ↓
+VALIDACAO
+        ↓
+FINALIZACAO
+```
+
+A camada de staging padroniza os nomes das etapas e categorias antes que os dados sejam utilizados nas métricas.
+
+---
+
+## 8. Normalização dos dados
+
+Uma das decisões centrais do projeto é priorizar o aproveitamento dos dados.
+
+Exemplo de normalização:
+
+```text
+DISTANTE_DA_RESIDENCIA
+          ↓
+LONGE_DA_RESIDENCIA
+```
+
+A correção é realizada na camada de transformação, enquanto o valor original permanece preservado no RAW.
+
+O mesmo princípio é aplicado a variações de texto e categorias equivalentes quando existe uma regra determinística para sua padronização.
+
+A estratégia adotada é:
+
+> **aproveitar o máximo possível dos dados sem criar informações que não estejam presentes na fonte.**
+
+---
+
+## 9. Métricas
+
+### 9.1 Tempo total de conciliação
+
+O tempo total é calculado entre:
+
+```text
+data_entrada
+      ↓
+data_finalizacao
+```
+
+A `data_finalizacao` utilizada pela métrica corresponde ao campo:
+
+```text
+data_fim
+```
+
+da etapa:
+
+```text
+FINALIZACAO
+```
+
+O tempo é calculado em dias.
+
+---
+
+### 9.2 Tempo por etapa
+
+Para cada etapa válida:
+
+```text
+tempo_espera_etapa_dias =
+    data_fim - data_inicio
+```
+
+Isso permite comparar a permanência média das solicitações em cada etapa do processo.
+
+---
+
+## 10. Critérios para cálculo do tempo total
+
+Nem toda solicitação finalizada necessariamente possui histórico suficiente para calcular o tempo total com segurança.
+
+Para participar da métrica de tempo de conciliação, a solicitação deve:
+
+1. possuir status `FINALIZADA`;
+2. possuir `id_solicitacao` válido;
+3. possuir `protocolo` válido;
+4. possuir `data_entrada` válida;
+5. possuir histórico temporal válido;
+6. possuir as cinco etapas esperadas:
+   - `RECEPCAO_TRIAGEM`
+   - `ANALISE`
+   - `NEGOCIACAO`
+   - `VALIDACAO`
+   - `FINALIZACAO`;
+7. possuir datas de início e fim válidas para as etapas utilizadas;
+8. possuir `data_fim >= data_inicio`.
+
+Solicitações que não atendem aos critérios necessários não são apagadas da origem.
+
+Elas permanecem disponíveis nas camadas anteriores e podem ser utilizadas em análises que não dependam das informações ausentes ou inconsistentes.
+
+Essa separação permite preservar os dados sem comprometer a confiabilidade da métrica.
+
+---
+
+## 11. Camada de consumo
+
+A camada de consumo foi construída para responder perguntas específicas sem depender diretamente dos dados RAW.
+
+### `consumo_tempo_conciliacao`
+
+**Grão:** uma linha por solicitação finalizada com histórico completo e válido.
+
+Utilizada para responder:
+
+> Quanto tempo uma solicitação leva da entrada até a finalização?
+
+Principais campos:
+
+- `id_solicitacao`
+- `protocolo`
+- `tipo_conflito`
+- `data_entrada`
+- `data_finalizacao`
+- `periodo_entrada`
+- `tempo_total_conciliacao_dias`
+
+### `consumo_tempo_etapas`
+
+**Grão:** uma linha por solicitação e etapa válida.
+
+Utilizada para analisar:
+
+> Em qual etapa as solicitações permanecem por mais tempo?
+
+Principais campos:
+
+- `id_solicitacao`
+- `protocolo`
+- `tipo_conflito`
+- `etapa`
+- `data_inicio`
+- `data_fim`
+- `tempo_espera_etapa_dias`
+
+### `consumo_volume_solicitacoes`
+
+**Grão:** uma linha por período de entrada e status.
+
+Utilizada para acompanhar o volume de solicitações ao longo do tempo.
+
+Principais campos:
+
+- `periodo_entrada`
+- `status`
+- `quantidade_solicitacoes`
+
+### `consumo_cobertura_historico`
+
+**Grão:** uma linha com os indicadores de cobertura do histórico.
+
+Permite comparar:
+
+- total de solicitações finalizadas;
+- total de solicitações analisadas;
+- percentual de cobertura do histórico.
+
+---
+
+## 12. Resposta final
+
+A consulta final responde à pergunta principal exclusivamente a partir da camada de consumo:
+
+```sql
+select
+    tipo_conflito,
+    periodo_entrada,
+    count(*) as quantidade_solicitacoes,
+    round(avg(tempo_total_conciliacao_dias), 2) as tempo_medio_dias
+from consumo_tempo_conciliacao
+group by
+    tipo_conflito,
+    periodo_entrada
+order by
+    periodo_entrada,
+    tipo_conflito;
+```
+
+A consulta final não acessa:
+
+- arquivos RAW;
+- tabelas de staging;
+- fontes originais.
+
+As regras de elegibilidade da métrica já foram tratadas na camada de consumo.
+
+Dessa forma, a consulta final permanece simples e orientada à pergunta de negócio.
+
+---
+
+## 13. Dashboard
+
+O projeto possui um dashboard em Streamlit executado por:
+
+```bash
+streamlit run app.py
+```
+
+O dashboard apresenta:
+
+- total de solicitações finalizadas;
+- total de solicitações analisadas;
+- cobertura do histórico;
+- tempo médio de conciliação;
+- volume de solicitações por período;
+- volume por período e status;
+- tempo médio por tipo de conflito;
+- tempo médio por etapa;
+- evolução temporal do tempo médio;
+- tabela das solicitações analisadas.
+
+Também estão disponíveis filtros para exploração dos dados, incluindo:
+
+- tipo de conflito;
+- status;
+- etapa;
+- período de entrada.
+
+### Regra importante
+
+O dashboard não consulta diretamente o RAW.
+
+As informações apresentadas são obtidas a partir das camadas preparadas do projeto.
+
+---
+
+## 14. Qualidade dos dados
+
+A qualidade dos dados é tratada em diferentes pontos do pipeline.
+
+### Preservação
+
+O dado original é mantido no RAW.
+
+### Normalização
+
+Inconsistências que possuem correção determinística são tratadas nas transformações.
+
+### Regras de elegibilidade
+
+Métricas que dependem de informações completas utilizam somente os registros que atendem aos critérios necessários.
+
+### Testes automatizados
+
+O projeto possui testes dbt para verificar propriedades importantes dos dados.
+
+Os testes utilizados incluem:
+
+- `not_null`;
+- `unique`;
+- `accepted_values`.
+
+Ao todo, o projeto possui **16 testes dbt**.
+
+Esses testes ajudam a detectar problemas como:
+
+- identificadores ausentes;
+- protocolos duplicados;
+- categorias fora do domínio esperado;
+- inconsistências estruturais nos modelos.
+
+---
+
+## 15. dbt e linhagem
+
+O dbt é responsável pelas transformações e pela organização das dependências entre os modelos.
+
+A estrutura principal é:
+
+```text
+RAW
+ ↓
+STAGING
+ ↓
+CONSUMO
+ ↓
+RESPOSTA
+```
+
+A documentação e a linhagem dos modelos podem ser geradas com:
+
+```bash
+python -m dbt.cli.main docs generate --profiles-dir .
+```
+
+E visualizadas com:
+
+```bash
+python -m dbt.cli.main docs serve --profiles-dir .
+```
+
+A linhagem permite visualizar a origem dos dados e as dependências entre as transformações.
+
+---
+
+## 16. Delta Lake e versionamento
+
+O projeto utiliza Delta Lake para demonstrar versionamento de dados.
+
+A implementação utiliza a biblioteca:
+
+```text
+deltalake
+```
+
+sem necessidade de Apache Spark.
+
+O objetivo é demonstrar:
+
+- criação de uma tabela Delta;
+- existência de múltiplas versões;
+- consulta da versão atual;
+- consulta de uma versão anterior;
+- comparação entre versões.
+
+A demonstração pode ser executada por:
+
+```bash
+python consultas/delta_time_travel.py
+```
+
+A funcionalidade de time travel permite recuperar uma versão anterior do conjunto de dados e comparar seu estado com a versão atual.
+
+---
+
+## 17. Execução do projeto
+
+### 17.1 Instalação
+
+Recomenda-se utilizar um ambiente virtual:
 
 ```bash
 python -m venv .venv
 ```
 
-### Ativar no Windows PowerShell
-
-```powershell
-.\.venv\Scripts\Activate.ps1
-```
-
-### Instalar dependências
+Ative o ambiente virtual conforme o sistema operacional e instale as dependências:
 
 ```bash
-python -m pip install -r requirements.txt
+pip install -r requirements.txt
 ```
 
-> O ambiente `.venv` é apenas o ambiente local de execução e **não deve ser versionado no Git**.
+### 17.2 Executar a ingestão
 
----
-
-## 7. Execução do pipeline
-
-Com o ambiente virtual ativado, execute:
+Na raiz do projeto:
 
 ```bash
 python -m src.pipeline
 ```
 
-Essa etapa realiza a ingestão e preparação dos dados necessários ao pipeline.
+Essa etapa realiza a ingestão e preparação dos dados preservados no RAW.
 
----
+### 17.3 Validar o ambiente dbt
 
-## 8. Validar o dbt
-
-Entre na pasta do dbt:
+Entre na pasta:
 
 ```bash
 cd dbt
@@ -226,181 +609,232 @@ cd dbt
 Execute:
 
 ```bash
-dbt build
+python -m dbt.cli.main debug --profiles-dir .
 ```
 
-O `dbt build` executa os modelos e testes definidos no projeto.
+### 17.4 Executar transformações e testes
 
-Ao final, os testes devem apresentar resultado de sucesso.
-
----
-
-## 9. Gerar a documentação e DAG
-
+Ainda dentro de `dbt/`:
 
 ```bash
-dbt docs generate
+python -m dbt.cli.main build --profiles-dir .
 ```
 
-Para abrir a documentação:
+O comando executa os modelos e os testes definidos no projeto.
+
+O resultado esperado é uma execução sem falhas nos modelos e testes.
+
+### 17.5 Gerar documentação
 
 ```bash
-dbt docs serve
+python -m dbt.cli.main docs generate --profiles-dir .
 ```
 
-A documentação permite visualizar a **DAG e a linhagem dos dados**.
+Para visualizar:
 
+```bash
+python -m dbt.cli.main docs serve --profiles-dir .
+```
 
-Depois volte para a raiz:
+### 17.6 Executar as consultas de resposta
+
+Volte para a raiz:
 
 ```bash
 cd ..
 ```
 
----
-
-## 10. Executar a resposta de negócio
-
-Na raiz do projeto:
+Execute:
 
 ```bash
 python consultas/executar_respostas.py
 ```
 
-A consulta utiliza a **camada de consumo**, e não os dados RAW.
-
-O resultado apresenta informações relacionadas a:
-
-- tipo de conflito;
-- período de entrada;
-- quantidade de solicitações;
-- tempo médio de conciliação;
-- tempo médio das etapas.
-
----
-
-## 11. Validar o Delta Lake
-
-Execute:
+### 17.7 Executar demonstração de Delta Lake
 
 ```bash
 python consultas/delta_time_travel.py
 ```
 
-O objetivo é demonstrar que existem **duas ou mais versões da tabela Delta** e que é possível consultar uma versão anterior dos dados.
+### 17.8 Executar o dashboard
 
-Durante a apresentação, deve ser demonstrado:
-
-```text
-Versão atual
-     ↓
-Consulta
-     ↓
-Resultado
-
-Versão anterior
-     ↓
-Mesma consulta
-     ↓
-Resultado
-```
-
-Isso demonstra o recurso de **Time Travel**.
-
----
-
-## 12. Exbir gráficos streamlit
+Na raiz do projeto:
 
 ```bash
 streamlit run app.py
 ```
----
-
-## 13. Testes de qualidade
-O projeto possui testes definidos no `schema.yml`.
-
-São utilizados diferentes tipos de validação, incluindo:
-
-- `not_null`;
-- `unique`;
-- `accepted_values`;
-- relacionamentos, quando aplicável.
-
-Os testes verificam se os dados utilizados pela camada de consumo possuem qualidade suficiente para responder à pergunta de negócio.
 
 ---
 
-## 14. Regras importantes
+## 18. Reprodutibilidade
 
-### Preservação do bruto
+O projeto foi estruturado para permitir a reconstrução do pipeline a partir dos dados de entrada e das definições versionadas.
 
-Os dados RAW não são alterados para corrigir problemas.
+O fluxo principal é:
 
-### Transformação
+```bash
+python -m src.pipeline
 
-As regras de limpeza e padronização ficam nos modelos dbt.
+cd dbt
 
-### Consumo
+python -m dbt.cli.main build --profiles-dir .
+```
 
-A camada de consumo é construída especificamente para responder à pergunta de negócio.
+Depois, a aplicação pode ser executada com:
 
-### Consulta final
+```bash
+cd ..
 
-A consulta final:
+streamlit run app.py
+```
 
-- lê somente a camada de consumo;
-- não acessa diretamente o RAW;
-- não cria regras de negócio no `WHERE`.
-
-### Reprodutibilidade
-
-O pipeline deve conseguir ser reconstruído a partir das fontes.
+A separação entre ingestão, transformação, consumo e apresentação permite reproduzir as etapas de forma independente.
 
 ---
 
-## 15. Decisões de projeto
+## 19. Decisões de arquitetura
 
-As principais decisões estão documentadas em:
+As principais decisões do projeto estão documentadas em:
 
 ```text
 DECISOES.md
 ```
 
-O documento explica:
+O documento detalha, entre outros pontos:
 
-1. **Arquitetura de armazenamento**
-2. **Grão dos modelos**
-3. **Tratamento de dado ambíguo**
-4. **Destino dos registros inválidos**
-
----
-
-## 16. Resultado esperado
-
-Ao final da execução, o projeto deve permitir responder:
-
-> **Quanto tempo uma solicitação de conciliação leva, em média, desde sua entrada até a finalização?**
-
-E realizar os seguintes recortes:
-
-```text
-Tipo de conflito
-        +
-Período de entrada
-        +
-Etapa do processo
-```
-
-A análise complementar permite identificar **qual etapa apresenta o maior tempo médio de permanência**.
-
-> Esse indicador representa o maior tempo médio observado entre as etapas. Ele não deve ser interpretado, isoladamente, como prova da causa do problema.
+- arquitetura das camadas;
+- grão dos modelos;
+- tratamento de dados inconsistentes;
+- normalização de categorias;
+- tratamento das etapas do histórico;
+- critérios para cálculo do tempo de conciliação;
+- tratamento de informações incompletas;
+- uso de dados sintéticos;
+- decisões relacionadas ao consumo.
 
 ---
 
-## 17. Dados e privacidade
+## 20. Princípios adotados
 
-Este projeto possui finalidade **exclusivamente acadêmica**.
+O projeto segue alguns princípios centrais:
 
-Não devem ser utilizados dados pessoais reais no repositório.
+### 1. Preservar antes de transformar
 
-As informações complementares utilizadas na PoC são **sintéticas/anônimas**.
+O dado original é mantido no RAW.
+
+### 2. Normalizar antes de descartar
+
+Quando uma inconsistência pode ser corrigida de forma determinística, busca-se aproveitar o registro.
+
+### 3. Não inventar informação
+
+Quando não existe informação suficiente para corrigir um campo com segurança, o projeto não cria um valor artificial.
+
+### 4. Separar transformação de resposta
+
+As regras de preparação e elegibilidade são aplicadas nas camadas de transformação e consumo.
+
+### 5. Responder a perguntas de negócio
+
+A camada de consumo não é apenas uma cópia dos dados tratados. Ela organiza os dados de acordo com as perguntas que precisam ser respondidas.
+
+### 6. Garantir rastreabilidade
+
+O projeto mantém:
+
+- dados RAW;
+- modelos dbt;
+- testes;
+- documentação;
+- linhagem;
+- decisões arquiteturais;
+- versionamento Delta Lake.
+
+### 7. Manter a resposta reproduzível
+
+A mesma sequência de ingestão e transformação deve produzir os mesmos resultados a partir da mesma massa de entrada.
+
+---
+
+## 21. Privacidade
+
+Os dados utilizados no projeto são sintéticos ou anonimizados e não devem conter dados pessoais reais.
+
+O projeto foi desenvolvido exclusivamente para fins acadêmicos.
+
+---
+
+## 22. Checklist do projeto
+
+### Fontes e ingestão
+
+- [x] Utilização de mais de um formato de fonte
+- [x] Ingestão realizada em Python
+- [x] Preservação dos dados RAW
+- [x] Separação entre ingestão e transformação
+
+### Transformação
+
+- [x] Transformações realizadas com dbt
+- [x] Padronização de categorias
+- [x] Conversão e tratamento de datas
+- [x] Regras documentadas
+- [x] Modelos com grão definido
+
+### Consumo
+
+- [x] Camada de consumo orientada à pergunta de negócio
+- [x] Métrica de tempo total
+- [x] Métrica de tempo por etapa
+- [x] Volume por período e status
+- [x] Indicador de cobertura do histórico
+- [x] Consulta final baseada somente na camada de consumo
+
+### Qualidade
+
+- [x] 16 testes dbt
+- [x] `not_null`
+- [x] `unique`
+- [x] `accepted_values`
+
+### Governança e rastreabilidade
+
+- [x] Documentação de decisões
+- [x] Linhagem dbt
+- [x] Preservação do RAW
+- [x] Versionamento com Delta Lake
+- [x] Demonstração de time travel
+
+### Apresentação
+
+- [x] Dashboard Streamlit
+- [x] Indicadores principais
+- [x] Filtros
+- [x] Visualizações analíticas
+- [x] Dados sem acesso direto ao RAW pelo dashboard
+
+### Documentação
+
+- [x] README
+- [x] DECISOES.md
+- [x] Documentação dbt
+- [x] Consultas de resposta
+- [x] Demonstração de Delta Lake
+
+---
+
+## 23. Resultado esperado
+
+Ao final da execução, o projeto deve permitir responder de forma reproduzível:
+
+> **Quanto tempo, em média, uma solicitação leva da entrada até a finalização da conciliação, considerando o tipo de conflito e o período de entrada?**
+
+Além disso, deve ser possível identificar:
+
+- o volume de solicitações ao longo do tempo;
+- a cobertura disponível do histórico;
+- o tempo médio por tipo de conflito;
+- o tempo médio por etapa;
+- a etapa com maior tempo médio de permanência.
+
+A principal entrega do projeto é transformar dados heterogêneos e imperfeitos em uma estrutura analítica **utilizável, rastreável e reproduzível**, preservando o dado original e deixando explícitos os critérios utilizados para cada métrica.
