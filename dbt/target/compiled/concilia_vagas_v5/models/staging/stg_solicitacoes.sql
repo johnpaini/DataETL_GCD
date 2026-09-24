@@ -7,13 +7,20 @@
 --
 -- Dessa forma, uma solicitação presente nas duas fontes não é duplicada
 -- e os dados da fonte principal são preservados.
+--
+-- Normalização de status:
+-- `EM_ANALISE` e `EM_ANÁLISE` representam o mesmo status.
+-- A representação canônica adotada no staging é `EM_ANALISE`.
 
 with original as (
 
     select
         try_cast(id as integer) as id_solicitacao,
         protocolo,
-        upper(trim(status)) as status,
+        case
+            when upper(trim(status)) = 'EM_ANÁLISE' then 'EM_ANALISE'
+            else upper(trim(status))
+        end as status,
         aceiteInstrucoes as aceite_instrucoes,
         try_cast(dataCriacao as timestamp) as data_entrada,
         try_cast(dataAtualizacao as timestamp) as data_atualizacao,
@@ -27,7 +34,13 @@ complementar as (
     select
         try_cast(id as integer) as id_solicitacao,
         protocolo,
-        upper(trim(status)) as status,
+        case
+        when replace(upper(trim(status)), ' ', '_') in (
+            'EM_ANALISE',
+            'EM_ANÁLISE'
+        ) then 'EM_ANALISE'
+        else upper(trim(status))
+        end as status,
         aceiteInstrucoes as aceite_instrucoes,
         try_cast(dataCriacao as timestamp) as data_entrada,
         try_cast(dataAtualizacao as timestamp) as data_atualizacao,

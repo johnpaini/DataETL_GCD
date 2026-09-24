@@ -26,6 +26,16 @@ df_etapas = con.sql("SELECT * FROM consumo_tempo_etapas").df()
 df_volume = con.sql("SELECT * FROM consumo_volume_solicitacoes").df()
 df_cobertura = con.sql("SELECT * FROM consumo_cobertura_historico").df()
 df_solicitacoes = con.sql("SELECT * FROM stg_solicitacoes").df()
+df_solicitacoes["status"] = (
+    df_solicitacoes["status"]
+    .astype("string")
+    .str.strip()
+    .str.upper()
+    .str.replace(" ", "_", regex=False)
+    .replace({
+        "EM_ANÁLISE": "EM_ANALISE",
+    })
+)
 
 con.close()
 
@@ -60,7 +70,6 @@ st.sidebar.header("🔎 Filtros")
 
 nomes_status = {
     "EM_ANALISE": "Em análise",
-    "EM_ANÁLISE": "Em análise",
     "FINALIZADA": "Finalizada",
     "REGISTRADA": "Registrada",
 }
@@ -240,7 +249,6 @@ with col_status:
         )
         nomes_status = {
             "EM_ANALISE": "Em análise",
-            "EM_ANÁLISE": "Em análise",
             "FINALIZADA": "Finalizada",
             "REGISTRADA": "Registrada",
         }
