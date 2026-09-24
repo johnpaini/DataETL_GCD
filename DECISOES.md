@@ -298,36 +298,24 @@ Esses casos não devem produzir artificialmente uma duração de conciliação.
 
 ---
 
-## 13. Quarentena — decisão atual
+## 13. Tratamento de dados com inconsistências
 
-Neste momento, o projeto **não possui uma camada física de quarentena implementada como tabela/modelo separado**.
+O projeto prioriza o aproveitamento dos dados. Registros com inconsistências não são automaticamente descartados.
 
-O tratamento efetivamente adotado é:
+Sempre que o problema puder ser corrigido de maneira determinística e documentada, a correção é realizada nas camadas de transformação, preservando o valor original no RAW.
 
-```text
-RAW preserva o registro
-        ↓
-STAGING padroniza
-        ↓
-qualidade é validada
-        ↓
-registro incompleto pode ser excluído
-da MÉTRICA específica
-        ↓
-dados válidos seguem para CONSUMO
-```
+Exemplos de tratamento adotados no projeto:
 
-Portanto, não se deve afirmar que existe uma tabela `quarentena` caso ela não esteja presente no pipeline.
+- **Inconsistências de formatação textual:** padronização de espaços, caixa dos caracteres e representação das categorias.
+- **Categorias semanticamente equivalentes:** aplicação de regras explícitas de normalização quando duas representações correspondem ao mesmo conceito. Um exemplo é a normalização de `DISTANTE_DA_RESIDENCIA` para `LONGE_DA_RESIDENCIA`.
+- **Conversão de tipos:** conversão de datas e identificadores para os tipos esperados quando a conversão pode ser realizada de forma segura.
+- **Registros parcialmente utilizáveis:** os campos válidos podem continuar sendo utilizados em análises que não dependam do campo inconsistente.
+- **Histórico incompleto:** a solicitação continua preservada, mas não participa de métricas que exigem histórico temporal completo. Não são criadas etapas ou datas que não estejam presentes na fonte.
+- **Inconsistências que não podem ser corrigidas com segurança:** o valor não é artificialmente alterado. O registro permanece preservado nas camadas anteriores e pode ser excluído apenas da análise específica que dependeria daquele dado.
 
-A decisão atual pode ser descrita como:
+A estratégia adotada, portanto, é **aproveitar o máximo possível dos dados sem criar informações que não estejam presentes na fonte**.
 
-> **retenção no RAW + exclusão controlada das métricas que exigem maior qualidade temporal.**
-
-Essa abordagem mantém rastreabilidade e evita contaminar os indicadores com registros que não possuem informação suficiente.
-
-Uma futura camada física de quarentena poderá ser adicionada caso seja necessário registrar, de forma estruturada, o motivo da rejeição de cada registro. Essa evolução não faz parte da decisão atual.
-
----
+Essa abordagem mantém a rastreabilidade: o dado original permanece preservado no RAW, enquanto as regras de normalização são aplicadas e documentadas nas camadas de transformação.
 
 ## 14. Testes de qualidade
 
@@ -478,8 +466,8 @@ As decisões do projeto podem ser resumidas nos seguintes princípios:
 | Etapas esperadas | 5 etapas do fluxo definido |
 | Histórico incompleto | Não participa da métrica de tempo total |
 | Dado inválido | Não é apagado do RAW |
-| Quarentena física | Não implementada atualmente |
-| Tratamento de qualidade | Testes + filtros controlados nas métricas |
+| Quarentena física | Não adotada como camada do projeto |
+| Tratamento de qualidade | Normalização determinística + testes + filtros controlados nas métricas |
 | Dashboard | Consulta staging/consumo, não RAW |
 | Dados complementares | Sintéticos, para fins acadêmicos |
 | Versionamento | Delta Lake com Time Travel |
@@ -490,4 +478,4 @@ As decisões do projeto podem ser resumidas nos seguintes princípios:
 
 Este documento descreve o comportamento efetivamente adotado pelo projeto e deve ser atualizado caso novas camadas ou regras sejam implementadas.
 
-Em particular, caso uma camada física de quarentena seja criada posteriormente, a seção **13. Quarentena — decisão atual** deverá ser revisada para descrever sua estrutura, motivo da rejeição, retenção e fluxo de reprocessamento.
+A estratégia de qualidade deve continuar sendo revisada sempre que novas regras de normalização ou novas fontes forem incorporadas. Qualquer nova correção deve ser determinística, documentada e realizada fora do RAW.
