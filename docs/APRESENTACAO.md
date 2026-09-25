@@ -1,4 +1,4 @@
-# Roteiro — 20 minutos
+# Roteiro — 12 minutos
 
 ## 0–4 min
 Pergunta de negócio, fontes e defeitos.
@@ -14,7 +14,6 @@ Mostrar:
 - DAG;
 - Delta/time travel;
 - decisão sobre `dataAtualizacao` ≠ `dataFinalizacao`;
-- quarentena.
 
 ## 16–20 min
 Executar as duas consultas e interpretar:

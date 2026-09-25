@@ -30,6 +30,16 @@ models:
       - name: tipo_conflito
         tests:
           - not_null
+          - accepted_values:
+              values:
+                - 'LONGE_DA_RESIDENCIA'
+                - 'PROXIMA_DA_RESIDENCIA'
+                - 'NA_ESCOLA_DO_IRMAO'
+                - 'NO_CAMINHO_DO_TRABALHO'
+                - 'PROXIMA_DO_TRABALHO'
+                - 'MESMA_REGIAO_DA_RESIDENCIA'
+                - 'ACESSO_POR_TRANSPORTE_PUBLICO'
+                - 'OUTRO'
 
   - name: consumo_tempo_conciliacao
     columns:
